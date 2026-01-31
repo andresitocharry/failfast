@@ -21,7 +21,7 @@ export const GET_CONTRACTS = gql`
 
 export const GET_CONTRACT_DETAIL = gql`
   query GetContractDetail($id: String!) {
-    contracts_by_pk(id: $id) {
+    contracts(where: { id: { _eq: $id } }) {
       id
       title
       client
@@ -36,10 +36,6 @@ export const GET_CONTRACT_DETAIL = gql`
       health
       risk_level
       pdf_url
-      project_manager_id
-      project_manager {
-        name
-      }
       milestones {
         id
         name

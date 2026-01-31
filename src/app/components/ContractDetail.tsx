@@ -21,7 +21,8 @@ export function ContractDetail({ contractId, contractData: propContractData }: C
   const [activeTab, setActiveTab] = useState("overview");
 
   // Use query data when available, otherwise use prop data as fallback during loading
-  const contract = data?.contracts_by_pk || propContractData;
+  // Query now returns array, so get first element
+  const contract = data?.contracts?.[0] || propContractData;
 
   if (loading && !propContractData) return <div className="h-full flex items-center justify-center text-gray-500">Cargando detalles...</div>;
   if (error && !propContractData) {

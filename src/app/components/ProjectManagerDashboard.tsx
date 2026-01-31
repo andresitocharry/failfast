@@ -22,7 +22,22 @@ export function ProjectManagerDashboard() {
     skip: !selectedContractId,
   });
 
-  const contract = detailData?.contracts_by_pk;
+  // Extract first contract from array (query returns array now, not single object)
+  const contract = detailData?.contracts?.[0];
+
+  // Comprehensive debug logging
+  console.log("=== ProjectManagerDashboard Debug ===");
+  console.log("1. List Query:");
+  console.log("   - Loading:", listLoading);
+  console.log("   - Contracts count:", contracts.length);
+  console.log("   - Contracts:", contracts);
+  console.log("2. Selected Contract:");
+  console.log("   - Selected ID:", selectedContractId);
+  console.log("3. Detail Query:");
+  console.log("   - Loading:", detailLoading);
+  console.log("   - Detail Data:", detailData);
+  console.log("   - Contract:", contract);
+  console.log("=====================================");
 
   if (listLoading || (selectedContractId && detailLoading)) {
     return <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center text-white">Cargando proyecto...</div>;
@@ -83,8 +98,8 @@ export function ProjectManagerDashboard() {
                 key={c.id}
                 onClick={() => setSelectedContractId(c.id)}
                 className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-all flex-shrink-0 ${selectedContractId === c.id
-                    ? "bg-purple-500/20 text-white border border-purple-500/50"
-                    : "bg-[#1a1a24] text-gray-400 hover:text-white hover:bg-[#2a2a34]"
+                  ? "bg-purple-500/20 text-white border border-purple-500/50"
+                  : "bg-[#1a1a24] text-gray-400 hover:text-white hover:bg-[#2a2a34]"
                   }`}
               >
                 {c.title}
