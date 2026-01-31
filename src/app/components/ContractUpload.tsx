@@ -188,7 +188,9 @@ export function ContractUpload() {
       const aiFormData = new FormData();
       aiFormData.append("file", file);
 
-      const aiResponse = await fetch("http://localhost:8000/analyze-contract", {
+      // Use environment variable for AI service URL (falls back to localhost for development)
+      const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || "http://localhost:8000";
+      const aiResponse = await fetch(`${AI_SERVICE_URL}/analyze-contract`, {
         method: "POST",
         body: aiFormData,
       });

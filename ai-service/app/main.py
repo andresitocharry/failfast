@@ -9,10 +9,15 @@ import shutil
 app = FastAPI(title="Agentic Contract ERP AI", version="0.1.0")
 
 from fastapi.middleware.cors import CORSMiddleware
+import os
+
+# Get allowed origins from environment variable (comma-separated)
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
