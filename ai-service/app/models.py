@@ -36,3 +36,21 @@ class ContractSchema(BaseModel):
     parties: List[str]
     phases: List[Phase]
     current_phase: Literal["INITIATION", "EXECUTION", "CLOSURE"] = "INITIATION"
+    
+    # Audit Layer Fields
+    audit_summary: str = Field(..., description="Resumen del Agente Auditor sobre el cumplimiento de reglas de negocio.")
+    audit_insights: List[str] = Field(..., description="Lista de hallazgos específicos, riesgos de pago o falta de proveedores.")
+
+    # Neon Database Fields (Sync Layer)
+    client: str = Field(..., description="Nombre del cliente o entidad contratante.")
+    type: str = Field(..., description="Categoría del contrato (ej: construcción, mantenimiento, refinería).")
+    status: str = Field("active", description="Estado inicial del contrato.")
+    progress: int = Field(0, description="Progreso actual (por defecto 0 para nuevos).")
+    value: str = Field(..., description="Valor total del contrato formateado (ej: $1.2M).")
+    start_date: str = Field(..., description="Fecha de inicio (DD Mes YYYY).")
+    end_date: str = Field(..., description="Fecha de finalización (DD Mes YYYY).")
+    location: str = Field(..., description="Ubicación geográfica del proyecto.")
+    health: int = Field(100, description="Puntaje de salud del contrato (0-100).")
+    risk_level: Literal["bajo", "medio", "alto"] = Field(..., description="Nivel de riesgo determinado por la auditoría.")
+    project_manager_id: str = Field("1", description="ID del Project Manager asignado.")
+    pdf_url: Optional[str] = Field(None, description="URL del archivo en Cloudinary.")

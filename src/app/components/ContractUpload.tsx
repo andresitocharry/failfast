@@ -1,6 +1,16 @@
-import { Upload, FileText, Sparkles, Bot, CheckCircle2, AlertCircle, Lightbulb, Loader2, X, ExternalLink } from "lucide-react";
+import { Upload, FileText, Sparkles, Bot, CheckCircle2, AlertCircle, Lightbulb, Loader2, X, ExternalLink, Save } from "lucide-react";
 import { useState, useRef } from "react";
 import { motion } from "motion/react";
+import { gql, useMutation } from "@apollo/client";
+
+const INSERT_CONTRACT = gql`
+  mutation InsertContract($object: contracts_insert_input!) {
+    insert_contracts_one(object: $object) {
+      id
+      title
+    }
+  }
+`;
 
 const CLOUDINARY_CLOUD_NAME = "datll7nec";
 const CLOUDINARY_UPLOAD_PRESET = "presset-fast";
@@ -31,6 +41,21 @@ interface ContractData {
   erp_material_group: string;
   parties: string[];
   phases: Phase[];
+  audit_summary: string;
+  audit_insights: string[];
+
+  // Neon Synchronization Fields
+  client: string;
+  type: string;
+  status: string;
+  progress: number;
+  value: string;
+  start_date: string;
+  end_date: string;
+  location: string;
+  health: number;
+  risk_level: 'bajo' | 'medio' | 'alto';
+  project_manager_id: string;
 }
 
 export function ContractUpload() {
@@ -41,7 +66,44 @@ export function ContractUpload() {
   const [contractData, setContractData] = useState<ContractData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedAction, setSelectedAction] = useState<ActionItem | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [insertContract] = useMutation(INSERT_CONTRACT);
+
+  const handleSaveToNeon = async () => {
+    if (!contractData) return;
+    setIsSaving(true);
+    try {
+      await insertContract({
+        variables: {
+          object: {
+            id: contractData.contract_id,
+            title: contractData.title,
+            client: contractData.client,
+            type: contractData.type,
+            status: contractData.status,
+            progress: contractData.progress,
+            value: contractData.value,
+            start_date: contractData.start_date,
+            end_date: contractData.end_date,
+            location: contractData.location,
+            phase: contractData.phases[0]?.name.toLowerCase() || 'ejecucion',
+            health: contractData.health,
+            risk_level: contractData.risk_level,
+            project_manager_id: contractData.project_manager_id,
+            pdf_url: uploadedUrl
+          }
+        }
+      });
+      alert('¡Contrato guardado exitosamente en Neon!');
+    } catch (err: any) {
+      console.error('Error saving to Neon:', err);
+      setError('Error al guardar en la base de datos: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const processFile = async (file: File) => {
     setUploadedFile(file);
@@ -206,6 +268,16 @@ export function ContractUpload() {
           <div className="flex items-center gap-2 mb-8">
             <Bot className="w-5 h-5 text-purple-400" />
             <h3 className="text-white font-medium">Análisis del Agente BARI</h3>
+            {contractData && !isAnalyzing && (
+              <button
+                onClick={handleSaveToNeon}
+                disabled={isSaving}
+                className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 rounded-lg text-[10px] font-bold uppercase transition-all"
+              >
+                {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                {isSaving ? 'Guardando...' : 'Guardar en Base de Datos'}
+              </button>
+            )}
             {isAnalyzing && (
               <div className="flex gap-1 ml-auto">
                 <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
@@ -226,9 +298,9 @@ export function ContractUpload() {
 
             {isAnalyzing && (
               <div className="space-y-3">
-                <AnalysisStep label="Consultando manual de BARI..." status="processing" delay={0.1} />
-                <AnalysisStep label="Buscando proveedores en SAP..." status="processing" delay={0.3} />
-                <AnalysisStep label="Generando plan de ejecución..." status="processing" delay={0.5} />
+                <AnalysisStep label="Consultando manual de BARI..." delay={0.1} />
+                <AnalysisStep label="Buscando proveedores en SAP..." delay={0.3} />
+                <AnalysisStep label="Generando plan de ejecución..." delay={0.5} />
               </div>
             )}
 
@@ -243,17 +315,43 @@ export function ContractUpload() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h4 className="text-white font-bold text-lg mb-1">{contractData.title}</h4>
-                      <p className="text-[10px] text-gray-500 font-mono tracking-tighter uppercase">BARI ID: {contractData.contract_id}</p>
+                      <p className="text-[10px] text-gray-500 font-mono tracking-tighter uppercase">BARI ID: {contractData.contract_id} | CLIENTE: {contractData.client}</p>
                     </div>
                     <div className="flex flex-col gap-2 items-end">
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold">V: {contractData.erp_vendor_id}</span>
+                      <div className="flex gap-2">
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 font-bold">{contractData.value}</span>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold">V: {contractData.erp_vendor_id}</span>
+                      </div>
                       <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold">CC: {contractData.erp_cost_center}</span>
                     </div>
                   </div>
 
-                  <p className="text-sm text-gray-300 italic mb-4 leading-relaxed line-clamp-2 hover:line-clamp-none transition-all">"{contractData.summary}"</p>
 
-                  <div className="flex flex-wrap gap-2 pt-4 border-t border-white/5">
+                  <p className="text-sm text-gray-300 italic mb-4 leading-relaxed hover:line-clamp-none transition-all">"{contractData.summary}"</p>
+
+                  {/* Audit Agent Section */}
+                  <div className="mt-6 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-30 transition-all">
+                      <Bot className="w-12 h-12 text-amber-400" />
+                    </div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                      <h5 className="text-[11px] font-bold text-amber-400 uppercase tracking-widest">Informe del Agente Auditor BARI</h5>
+                    </div>
+                    <p className="text-[13px] text-gray-300 leading-relaxed mb-4">
+                      {contractData.audit_summary}
+                    </p>
+                    <div className="space-y-2">
+                      {contractData.audit_insights.map((insight, i) => (
+                        <div key={i} className="flex items-start gap-2 text-[11px] text-gray-400 border-l border-amber-500/30 pl-3">
+                          <div className="w-1 h-1 rounded-full bg-amber-500/50 mt-1.5" />
+                          <span>{insight}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-4 border-t border-white/5 mt-4">
                     <span className="text-[9px] text-gray-500 uppercase font-bold">Partes: </span>
                     {contractData.parties.map((p, i) => (
                       <span key={i} className="text-[9px] bg-white/5 px-2 py-0.5 rounded text-gray-400">{p}</span>
@@ -400,7 +498,7 @@ export function ContractUpload() {
   );
 }
 
-function AnalysisStep({ label, status, delay }: { label: string; status: "processing" | "completed"; delay: number }) {
+function AnalysisStep({ label, delay }: { label: string; delay: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
