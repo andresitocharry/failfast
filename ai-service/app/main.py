@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from app.models import ContractSchema, ActionItem, Phase
 from app.services.extractor import extract_contract_data
@@ -26,17 +27,21 @@ class MilestoneCheckRequest(BaseModel):
 def read_root():
     return {"status": "AI Microservice Online", "service": "Agentic ERP"}
 
+logger = logging.getLogger("uvicorn.error")
+
 @app.post("/analyze-contract", response_model=ContractSchema)
 async def analyze_contract(file: UploadFile = File(...)):
     """
     Ingests a PDF contract, extracts structure using LLM, and returns JSON.
     """
     try:
+        logger.info(f"\n--- 📥 Receiving File: {file.filename} ---")
         content = await file.read()
         
         # Determine file type (basic check)
         if file.filename.endswith(".pdf"):
             from app.services.extractor import extract_text_from_pdf_bytes
+            logger.info(f"📄 Processing PDF...")
             text = extract_text_from_pdf_bytes(content)
         else:
             # Assume text/md
@@ -45,9 +50,14 @@ async def analyze_contract(file: UploadFile = File(...)):
         if not text.strip():
             raise HTTPException(status_code=400, detail="Could not extract text from file.")
             
+        logger.info(f"✅ Text Extracted ({len(text)} chars). Sending to Gemini...")
+        logger.info(f"📝 Preview: {text[:200]}...\n")
+
         contract_data = extract_contract_data(text)
+        logger.info(f"🤖 Gemini Analysis Complete. ID: {contract_data.contract_id}")
         return contract_data
     except Exception as e:
+        logger.error(f"❌ Error during analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/check-milestone")
