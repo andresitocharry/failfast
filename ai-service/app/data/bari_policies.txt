@@ -1,20 +1,15 @@
 POLÍTICAS DE CONTRATACIÓN Y OBRA - BARI INFRAESTRUCTURAS
 
 1. REQUISITOS DE IMPERMEABILIZACIÓN:
-- Todo contrato de impermeabilización debe incluir una 'Garantía de Estabilidad y Estanqueidad' por un mínimo de 10 años.
+- Todo contrato de impermeabilización debe incluir una 'Garantía de Estanqueidad' por un mínimo de 10 años.
 - Es obligatorio el uso de productos con certificación ISO 9001.
-- Antes del pago final, se debe realizar una 'Prueba de Inundación' de 24 horas y generar el acta correspondiente.
+- Antes del pago final, se debe realizar una 'Prueba de Inundación' de 24 horas.
 
 2. SEGURIDAD Y CUMPLIMIENTO (HSE):
-- El contratista debe presentar certificados de trabajo en alturas (SGSST) para todo el personal.
-- Se requiere el pago de ARL nivel 5 para este tipo de labores de alto riesgo.
+- El contratista debe presentar certificados de trabajo en alturas (SGSST).
+- Se requiere el pago de ARL nivel 5 para este tipo de labores.
 
 3. MAPEO FINANCIERO (SAP/ODDO):
 - Gastos de mantenimiento menor se cargan al Centro de Costo 500-1010.
-- Si la impermeabilización es parte de una construcción nueva, se debe cargar al proyecto 500-2020 como inversión (CAPEX).
-- El grupo de artículos para servicios de impermeabilización es siempre OBR-IMP-01.
-
-4. FLUJO DE APROBACIÓN PARA PAGOS:
-- El 20% se libera con el Acta de Inicio y Pólizas aprobadas.
-- El 50% con avance de obra certificado por interventoría.
-- El 30% restante con la firma del Acta de Liquidación y entrega de garantía de estanqueidad.
+- Proyectos de Infraestructura se cargan al 500-2020.
+- El grupo de artículos para servicios de impermeabilización es OBR-IMP-01.
