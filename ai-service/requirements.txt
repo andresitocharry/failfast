@@ -6,3 +6,4 @@ langgraph
 pydantic
 python-multipart
 python-dotenv
+pypdf

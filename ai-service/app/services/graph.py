@@ -1,13 +1,13 @@
-from typing import TypedDict, List, Annotated
+from typing import TypedDict, List, Annotated, Optional
 from langgraph.graph import StateGraph, END
 from app.models import ContractSchema, ActionItem, Phase
 
 # Define the State for the Graph
 class AgentState(TypedDict):
     contract: ContractSchema
-    current_action: ActionItem | None
-    latest_evidence: str | None
-    agent_response: str | None
+    current_action: Optional[ActionItem]
+    latest_evidence: Optional[str]
+    agent_response: Optional[str]
 
 def evaluate_evidence_node(state: AgentState):
     """

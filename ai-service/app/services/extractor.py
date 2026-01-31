@@ -3,6 +3,24 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app.models import ContractSchema, Phase, ActionItem
 from app.core.config import settings
 import json
+import io
+from pydantic import ValidationError
+from pypdf import PdfReader
+
+def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
+    """
+    Extracts text from a PDF file provided as bytes.
+    """
+    try:
+        reader = PdfReader(io.BytesIO(pdf_bytes))
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
+        return text
+    except Exception as e:
+        print(f"Error reading PDF: {e}")
+        return ""
+
 
 # Initialize LLM (Gemini)
 if not settings.GOOGLE_API_KEY:
