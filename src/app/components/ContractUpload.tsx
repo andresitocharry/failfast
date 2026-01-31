@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import { Upload, FileText, Sparkles, Bot, CheckCircle2, AlertCircle, Lightbulb, Loader2, X, ExternalLink } from "lucide-react";
-import { useState, useRef } from "react";
-import { motion } from "motion/react";
-=======
 import { Upload, FileText, Sparkles, Bot, CheckCircle2, AlertCircle, Lightbulb, Loader2, X, ExternalLink, Save, Users } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "motion/react";
@@ -26,7 +21,6 @@ const INSERT_MILESTONES = gql`
     }
   }
 `;
->>>>>>> merging
 
 const CLOUDINARY_CLOUD_NAME = "datll7nec";
 const CLOUDINARY_UPLOAD_PRESET = "presset-fast";
@@ -247,145 +241,128 @@ export function ContractUpload() {
 
   if (uploadedFile && (isUploading || isAnalyzing || contractData)) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-500">
-        {/* Left: Storage & Context */}
-        <div className="bg-[#0f0f17] border border-[#1a1a24] rounded-xl p-6 h-fit">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-medium">Contrato Original</h3>
-                <p className="text-[10px] text-gray-500 uppercase font-mono">{uploadedFile.name}</p>
-              </div>
-            </div>
-            {(uploadedUrl || isUploading) && (
-              <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold uppercase ${uploadedUrl ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
-                {uploadedUrl ? <><CheckCircle2 className="w-2.5 h-2.5" /> Almacenado en Cloudinary</> : <><Loader2 className="w-2.5 h-2.5 animate-spin" /> Subiendo...</>}
-              </div>
-            )}
-          </div>
-
-          {/* PDF Preview / Placeholder */}
-          <div className="relative aspect-[3/4] w-full max-w-[320px] mx-auto mb-6 bg-[#1a1a24] rounded-lg border border-[#2a2a34] overflow-hidden group">
-            {uploadedUrl ? (
-              <img
-                src={uploadedUrl.replace('.pdf', '.jpg')}
-                alt="Quick Preview"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "https://res.cloudinary.com/demo/image/upload/v1680194689/pdf-icon.png";
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-gray-600 gap-4">
-                <Loader2 className="w-12 h-12 animate-spin text-purple-500/30" />
-                <span className="text-xs italic uppercase tracking-widest">Generando vista previa...</span>
-              </div>
-            )}
-
-            {uploadedUrl && (
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4">
-                <a
-                  href={uploadedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all shadow-xl"
-                >
-                  <ExternalLink className="w-6 h-6" />
-                </a>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            {uploadedUrl && (
-              <button
-                onClick={() => window.open(uploadedUrl, '_blank')}
-                className="w-full py-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl transition-all font-bold text-sm flex items-center justify-center gap-2"
-              >
-                <ExternalLink className="w-4 h-4" /> Ver Documento Full
-              </button>
-            )}
-            <button
-              onClick={handleReset}
-              className="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-xl transition-all text-sm"
-            >
-              Subir otro archivo
-            </button>
-          </div>
-        </div>
-
-        {/* Right: AI Analysis Engine */}
-        <div className="bg-gradient-to-br from-[#0f0f17] to-[#12121c] border border-purple-500/20 rounded-xl p-6 min-h-[500px] shadow-2xl relative overflow-hidden">
-          {/* Analysis Background Effect */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/5 blur-[100px] pointer-events-none" />
-
-          <div className="flex items-center gap-2 mb-8">
-            <Bot className="w-5 h-5 text-purple-400" />
-            <h3 className="text-white font-medium">Análisis del Agente BARI</h3>
-<<<<<<< HEAD
-=======
-            {contractData && !isAnalyzing && (
-              <div className="ml-auto flex items-center gap-3">
-                {/* PM Selector */}
-                <div className="flex items-center gap-2 px-2 py-1 bg-white/5 border border-white/10 rounded-lg">
-                  <Users className="w-3 h-3 text-purple-400" />
-                  <select
-                    value={selectedPmId || ''}
-                    onChange={(e) => setSelectedPmId(e.target.value)}
-                    className="bg-transparent text-[10px] text-gray-300 outline-none cursor-pointer border-none p-0 focus:ring-0"
-                  >
-                    <option value="" disabled className="bg-[#0f0f17]">Seleccionar PM</option>
-                    {userData?.users?.map((user: any) => (
-                      <option key={user.id} value={user.id} className="bg-[#0f0f17]">
-                        {user.name}
-                      </option>
-                    ))}
-                  </select>
+      <>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-500">
+          {/* Left: Storage & Context */}
+          <div className="bg-[#0f0f17] border border-[#1a1a24] rounded-xl p-6 h-fit">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-400" />
                 </div>
+                <div>
+                  <h3 className="text-white font-medium">Contrato Original</h3>
+                  <p className="text-[10px] text-gray-500 uppercase font-mono">{uploadedFile.name}</p>
+                </div>
+              </div>
+              {(uploadedUrl || isUploading) && (
+                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold uppercase ${uploadedUrl ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
+                  {uploadedUrl ? <><CheckCircle2 className="w-2.5 h-2.5" /> Almacenado en Cloudinary</> : <><Loader2 className="w-2.5 h-2.5 animate-spin" /> Subiendo...</>}
+                </div>
+              )}
+            </div>
 
+            {/* PDF Preview / Placeholder */}
+            <div className="relative aspect-[3/4] w-full max-w-[320px] mx-auto mb-6 bg-[#1a1a24] rounded-lg border border-[#2a2a34] overflow-hidden group">
+              {uploadedUrl ? (
+                <img
+                  src={uploadedUrl.replace('.pdf', '.jpg')}
+                  alt="Quick Preview"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://res.cloudinary.com/demo/image/upload/v1680194689/pdf-icon.png";
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-gray-600 gap-4">
+                  <Loader2 className="w-12 h-12 animate-spin text-purple-500/30" />
+                  <span className="text-xs italic uppercase tracking-widest">Generando vista previa...</span>
+                </div>
+              )}
+
+              {uploadedUrl && (
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4">
+                  <a
+                    href={uploadedUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all shadow-xl"
+                  >
+                    <ExternalLink className="w-6 h-6" />
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {uploadedUrl && (
                 <button
-                  onClick={handleSaveToNeon}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 rounded-lg text-[10px] font-bold uppercase transition-all"
+                  onClick={() => window.open(uploadedUrl, '_blank')}
+                  className="w-full py-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl transition-all font-bold text-sm flex items-center justify-center gap-2"
                 >
-                  {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                  {isSaving ? 'Guardando...' : 'Guardar en Base de Datos'}
+                  <ExternalLink className="w-4 h-4" /> Ver Documento Full
                 </button>
-              </div>
-            )}
->>>>>>> merging
-            {isAnalyzing && (
-              <div className="flex gap-1 ml-auto">
-                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" />
-              </div>
-            )}
+              )}
+              <button
+                onClick={handleReset}
+                className="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-xl transition-all text-sm"
+              >
+                Subir otro archivo
+              </button>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {error && (
-              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3 text-red-400 animate-in slide-in-from-top-4 duration-300">
-                <AlertCircle className="w-5 h-5" />
-                <p className="text-sm">{error}</p>
-                <button onClick={handleReset} className="ml-auto hover:text-white"><X className="w-4 h-4" /></button>
-              </div>
-            )}
+          {/* Right: AI Analysis Engine */}
+          <div className="bg-gradient-to-br from-[#0f0f17] to-[#12121c] border border-purple-500/20 rounded-xl p-6 min-h-[500px] shadow-2xl relative overflow-hidden">
+            {/* Analysis Background Effect */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/5 blur-[100px] pointer-events-none" />
+
+            <div className="flex items-center gap-2 mb-8">
+              <Bot className="w-5 h-5 text-purple-400" />
+              <h3 className="text-white font-medium">Análisis del Agente BARI</h3>
+              {contractData && !isAnalyzing && (
+                <div className="ml-auto flex items-center gap-3">
+                  {/* PM Selector */}
+                  <div className="flex items-center gap-2 px-2 py-1 bg-white/5 border border-white/10 rounded-lg">
+                    <Users className="w-3 h-3 text-purple-400" />
+                    <select
+                      value={selectedPmId || ''}
+                      onChange={(e) => setSelectedPmId(e.target.value)}
+                      className="bg-transparent text-[10px] text-gray-300 outline-none cursor-pointer border-none p-0 focus:ring-0"
+                    >
+                      <option value="" disabled className="bg-[#0f0f17]">Seleccionar PM</option>
+                      {userData?.users?.map((user: any) => (
+                        <option key={user.id} value={user.id} className="bg-[#0f0f17]">
+                          {user.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleSaveToNeon}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 rounded-lg text-[10px] font-bold uppercase transition-all"
+                  >
+                    {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                    {isSaving ? 'Guardando...' : 'Guardar en Base de Datos'}
+                  </button>
+                </div>
+              )}
+              {isAnalyzing && (
+                <div className="flex gap-1 ml-auto">
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" />
+                </div>
+              )}
+            </div>
 
             {isAnalyzing && (
               <div className="space-y-3">
-<<<<<<< HEAD
                 <AnalysisStep label="Consultando manual de BARI..." status="processing" delay={0.1} />
                 <AnalysisStep label="Buscando proveedores en SAP..." status="processing" delay={0.3} />
                 <AnalysisStep label="Generando plan de ejecución..." status="processing" delay={0.5} />
-=======
-                <AnalysisStep label="Consultando manual de BARI..." delay={0.1} />
-                <AnalysisStep label="Buscando proveedores en SAP..." delay={0.3} />
-                <AnalysisStep label="Generando plan de ejecución..." delay={0.5} />
->>>>>>> merging
               </div>
             )}
 
@@ -400,12 +377,6 @@ export function ContractUpload() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h4 className="text-white font-bold text-lg mb-1">{contractData.title}</h4>
-<<<<<<< HEAD
-                      <p className="text-[10px] text-gray-500 font-mono tracking-tighter uppercase">BARI ID: {contractData.contract_id}</p>
-                    </div>
-                    <div className="flex flex-col gap-2 items-end">
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold">V: {contractData.erp_vendor_id}</span>
-=======
                       <p className="text-[10px] text-gray-500 font-mono tracking-tighter uppercase">BARI ID: {contractData.contract_id} | CLIENTE: {contractData.client}</p>
                     </div>
                     <div className="flex flex-col gap-2 items-end">
@@ -413,18 +384,11 @@ export function ContractUpload() {
                         <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 font-bold">{contractData.value}</span>
                         <span className="text-[9px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold">V: {contractData.erp_vendor_id}</span>
                       </div>
->>>>>>> merging
                       <span className="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold">CC: {contractData.erp_cost_center}</span>
                     </div>
                   </div>
 
-<<<<<<< HEAD
                   <p className="text-sm text-gray-300 italic mb-4 leading-relaxed line-clamp-2 hover:line-clamp-none transition-all">"{contractData.summary}"</p>
-
-                  <div className="flex flex-wrap gap-2 pt-4 border-t border-white/5">
-=======
-
-                  <p className="text-sm text-gray-300 italic mb-4 leading-relaxed hover:line-clamp-none transition-all">"{contractData.summary}"</p>
 
                   {/* Audit Agent Section */}
                   <div className="mt-6 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl relative overflow-hidden group">
@@ -449,7 +413,6 @@ export function ContractUpload() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 pt-4 border-t border-white/5 mt-4">
->>>>>>> merging
                     <span className="text-[9px] text-gray-500 uppercase font-bold">Partes: </span>
                     {contractData.parties.map((p, i) => (
                       <span key={i} className="text-[9px] bg-white/5 px-2 py-0.5 rounded text-gray-400">{p}</span>
@@ -490,71 +453,72 @@ export function ContractUpload() {
         </div>
 
         {/* Task Detail Modal */}
-        {selectedAction && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#1a1a24] border border-white/10 rounded-2xl p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
-            >
-              {/* Modal Glow */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[50px] pointer-events-none" />
-
-              <button
-                onClick={() => setSelectedAction(null)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors p-2"
+        {
+          selectedAction && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-[#1a1a24] border border-white/10 rounded-2xl p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
               >
-                <X className="w-6 h-6" />
-              </button>
-
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center shadow-inner">
-                  <Lightbulb className="w-8 h-8 text-amber-400" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-white text-xl font-bold">Análisis del Agente</h3>
-                    <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-tighter shadow-sm">RAG Verified</span>
-                  </div>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-mono mt-1">{selectedAction.id}</p>
-                </div>
-              </div>
-
-              <div className="space-y-6 text-left">
-                <section>
-                  <p className="text-[10px] text-gray-500 uppercase font-bold mb-3 tracking-widest pl-1">Tarea Identificada</p>
-                  <div className="text-[14px] text-white bg-white/5 p-4 rounded-xl border border-white/5 leading-relaxed shadow-sm">
-                    {selectedAction.description}
-                  </div>
-                </section>
-
-                <section>
-                  <p className="text-[10px] text-amber-400 uppercase font-bold mb-3 tracking-widest flex items-center gap-1.5 pl-1">
-                    <Sparkles className="w-3 h-3" /> Insight BARI Pro
-                  </p>
-                  <div className="text-[13px] text-gray-300 italic leading-relaxed pl-4 border-l-2 border-amber-500/30">
-                    "{selectedAction.insight || "No hay insight adicional para esta tarea."}"
-                  </div>
-                </section>
-
-                <section>
-                  <p className="text-[10px] text-blue-400 uppercase font-bold mb-3 tracking-widest pl-1">Fundamento Contractual</p>
-                  <div className="text-[12px] text-gray-400 font-mono bg-black/40 p-5 rounded-xl border border-blue-500/20 max-h-[180px] overflow-y-auto custom-scrollbar leading-relaxed">
-                    {selectedAction.citation || "No se encontró cita directa."}
-                  </div>
-                </section>
+                {/* Modal Glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[50px] pointer-events-none" />
 
                 <button
                   onClick={() => setSelectedAction(null)}
-                  className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-2xl transition-all font-bold mt-4 shadow-xl shadow-blue-500/20 active:scale-[0.98]"
+                  className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors p-2"
                 >
-                  Continuar con el Análisis
+                  <X className="w-6 h-6" />
                 </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </div>
+
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center shadow-inner">
+                    <Lightbulb className="w-8 h-8 text-amber-400" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white text-xl font-bold">Análisis del Agente</h3>
+                      <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-tighter shadow-sm">RAG Verified</span>
+                    </div>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-mono mt-1">{selectedAction.id}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6 text-left">
+                  <section>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold mb-3 tracking-widest pl-1">Tarea Identificada</p>
+                    <div className="text-[14px] text-white bg-white/5 p-4 rounded-xl border border-white/5 leading-relaxed shadow-sm">
+                      {selectedAction.description}
+                    </div>
+                  </section>
+
+                  <section>
+                    <p className="text-[10px] text-amber-400 uppercase font-bold mb-3 tracking-widest flex items-center gap-1.5 pl-1">
+                      <Sparkles className="w-3 h-3" /> Insight BARI Pro
+                    </p>
+                    <div className="text-[13px] text-gray-300 italic leading-relaxed pl-4 border-l-2 border-amber-500/30">
+                      "{selectedAction.insight || "No hay insight adicional para esta tarea."}"
+                    </div>
+                  </section>
+
+                  <section>
+                    <p className="text-[10px] text-blue-400 uppercase font-bold mb-3 tracking-widest pl-1">Fundamento Contractual</p>
+                    <div className="text-[12px] text-gray-400 font-mono bg-black/40 p-5 rounded-xl border border-blue-500/20 max-h-[180px] overflow-y-auto custom-scrollbar leading-relaxed">
+                      {selectedAction.citation || "No se encontró cita directa."}
+                    </div>
+                  </section>
+
+                  <button
+                    onClick={() => setSelectedAction(null)}
+                    className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-2xl transition-all font-bold mt-4 shadow-xl shadow-blue-500/20 active:scale-[0.98]"
+                  >
+                    Continuar con el Análisis
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+      </>
     );
   }
 
@@ -596,11 +560,7 @@ export function ContractUpload() {
   );
 }
 
-<<<<<<< HEAD
 function AnalysisStep({ label, status, delay }: { label: string; status: "processing" | "completed"; delay: number }) {
-=======
-function AnalysisStep({ label, delay }: { label: string; delay: number }) {
->>>>>>> merging
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -609,10 +569,16 @@ function AnalysisStep({ label, delay }: { label: string; delay: number }) {
       className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/5"
     >
       <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center">
-        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
+        {status === "processing" ? (
+          <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
+        ) : (
+          <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+        )}
       </div>
       <span className="text-xs text-gray-300">{label}</span>
-      <span className="text-[10px] text-gray-500 ml-auto italic">Analizando...</span>
+      <span className={`text-[10px] ml-auto italic ${status === "processing" ? "text-gray-500" : "text-green-500"}`}>
+        {status === "processing" ? "Analizando..." : "Completado"}
+      </span>
     </motion.div>
   );
 }
