@@ -90,13 +90,11 @@ REGLAS ESTRÍCTAS:
 - **Resumen Auditor (audit_summary)**: Informe ejecutivo sobre la viabilidad del contrato. Debe validar si la clasificación de fases y actividades realizada por el extractor es lógica y coherente con los estándares de BARI. Identifica inconsistencias entre las obligaciones legales y el plan de ejecución propuesto.
 - **Hallazgos (audit_insights)**: Lista de observaciones críticas con tono Corporativo y Analítico. Ejemplo: "No se identificaron proveedores homologados para la categoría de impermeabilización en SAP; se requiere iniciar proceso de registro", "La estructura de pagos presenta una desviación del 15% respecto a la política interna", "Se recomienda validar la coherencia entre el acta de entrega y la fase de liquidación".
 - **Thought Process**: Justificación técnica de la selección de Centros de Costo y Proveedores.
-- **Campos para Sincronización DB (Neon)**:
-  - `client`: Identifica el cliente o contratante.
-  - `type`: Clasifica el proyecto (construccion, mantenimiento, perforacion, refineria).
-  - `value`: Extrae el monto total y formatéalo (ej: $5.0M).
-  - `start_date` / `end_date`: Busca las fechas de vigencia (DD Mes YYYY).
-  - `location`: Ciudad o región del proyecto.
-  - `risk_level`: Determina si es "bajo", "medio" o "alto" basado en tu auditoría.
+- **Estructura de Tareas (Milestones)**: Cada tarea (`ActionItem`) debe tener:
+  - `id`: Formato M[Fase]-C[Nro] (ej: M1-C1).
+  - `due_date`: Fecha estimada de cumplimiento.
+  - `milestone_value`: Peso porcentual del hito (ej: 10%). La suma de todos los hitos debe ser lógica.
+  - `deliverables`: Lista de 3 entregables técnicos mínimos para dar por cerrada la tarea.
 
 TONE: Legal Architect, Senior Corporate Auditor, Rigorous & Professional.
 SALIDA: JSON válido siguiendo el esquema ContractSchema.
@@ -161,29 +159,15 @@ def extract_contract_data(param: str) -> ContractSchema:
             phases=[
                 Phase(name="INITIATION", description="Preparación Legal", actions=[
                     ActionItem(
-                        id="ACT-01", 
+                        id="M1-C1", 
                         description="Validación de Pólizas", 
                         criteria="Póliza aprobada en sistema",
                         insight="Fundamental para mitigar riesgos de ejecución inicial.",
-                        citation="Cláusula Quinta: Garantías y Pólizas."
-                    )
-                ], status="PENDING"),
-                Phase(name="EXECUTION", description="Prestación del Servicio", actions=[
-                    ActionItem(
-                        id="ACT-02", 
-                        description="Reporte Mensual de Avance", 
-                        criteria="Documento PDF cargado",
-                        insight="Control de KPIs críticos para desembolsos.",
-                        citation="Cláusula Novena: Obligaciones del Contratista."
-                    )
-                ], status="PENDING"),
-                Phase(name="CLOSURE", description="Liquidación", actions=[
-                    ActionItem(
-                        id="ACT-03", 
-                        description="Firma de Acta de Liquidación", 
-                        criteria="Acta firmada digitalmente",
-                        insight="Cierra formalmente las obligaciones legales y contables.",
-                        citation="Cláusula Décimo Segunda: Liquidación."
+                        citation="Cláusula Quinta: Garantías y Pólizas.",
+                        due_date="15 Ene 2026",
+                        milestone_value="10%",
+                        deliverables=["Certificado de Póliza", "Aprobación Jurídica"],
+                        status="pending"
                     )
                 ], status="PENDING")
             ],

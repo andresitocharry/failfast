@@ -1,13 +1,23 @@
-import { Upload, FileText, Sparkles, Bot, CheckCircle2, AlertCircle, Lightbulb, Loader2, X, ExternalLink, Save } from "lucide-react";
-import { useState, useRef } from "react";
+import { Upload, FileText, Sparkles, Bot, CheckCircle2, AlertCircle, Lightbulb, Loader2, X, ExternalLink, Save, Users } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "motion/react";
-import { gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import { GET_USERS } from "@/app/data/queries";
 
 const INSERT_CONTRACT = gql`
   mutation InsertContract($object: contracts_insert_input!) {
     insert_contracts_one(object: $object) {
       id
       title
+      summary
+    }
+  }
+`;
+
+const INSERT_MILESTONES = gql`
+  mutation InsertMilestones($objects: [milestones_insert_input!]!) {
+    insert_milestones(objects: $objects) {
+      affected_rows
     }
   }
 `;
@@ -19,9 +29,12 @@ interface ActionItem {
   id: string;
   description: string;
   criteria: string;
-  status: string;
+  status: 'pending' | 'in-progress' | 'completed' | 'delayed';
   insight?: string;
   citation?: string;
+  due_date: string;
+  milestone_value: string;
+  deliverables: string[];
 }
 
 interface Phase {
@@ -67,19 +80,33 @@ export function ContractUpload() {
   const [error, setError] = useState<string | null>(null);
   const [selectedAction, setSelectedAction] = useState<ActionItem | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedPmId, setSelectedPmId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { data: userData } = useQuery(GET_USERS);
   const [insertContract] = useMutation(INSERT_CONTRACT);
+  const [insertMilestones] = useMutation(INSERT_MILESTONES);
+
+  useEffect(() => {
+    if (userData?.users && userData.users.length > 0 && !selectedPmId) {
+      setSelectedPmId(userData.users[0].id);
+    }
+  }, [userData, selectedPmId]);
 
   const handleSaveToNeon = async () => {
-    if (!contractData) return;
+    if (!contractData || !selectedPmId) {
+      if (!selectedPmId) alert('Por favor selecciona un Project Manager');
+      return;
+    }
     setIsSaving(true);
     try {
+      // 1. Insert Contract
       await insertContract({
         variables: {
           object: {
             id: contractData.contract_id,
             title: contractData.title,
+            summary: `${contractData.audit_summary}\n\nINSIGHTS DE AUDITORÍA:\n${contractData.audit_insights.join('\n')}`,
             client: contractData.client,
             type: contractData.type,
             status: contractData.status,
@@ -88,15 +115,39 @@ export function ContractUpload() {
             start_date: contractData.start_date,
             end_date: contractData.end_date,
             location: contractData.location,
-            phase: contractData.phases[0]?.name.toLowerCase() || 'ejecucion',
+            phase: contractData.phases[0]?.name.toLowerCase() || 'inicio',
             health: contractData.health,
             risk_level: contractData.risk_level,
-            project_manager_id: contractData.project_manager_id,
+            project_manager_id: selectedPmId, // Usar el ID seleccionado y validado
             pdf_url: uploadedUrl
           }
         }
       });
-      alert('¡Contrato guardado exitosamente en Neon!');
+
+      // 2. Prepare Milestones from AI actions
+      const allMilestones = contractData.phases.flatMap(phase =>
+        phase.actions.map(action => ({
+          id: `${contractData.contract_id}-${action.id}`, // Generar ID único
+          contract_id: contractData.contract_id,
+          name: action.description,
+          phase: phase.name.toLowerCase(),
+          due_date: action.due_date,
+          status: action.status,
+          value: action.milestone_value,
+          deliverables: action.deliverables
+        }))
+      );
+
+      // 3. Insert Milestones
+      if (allMilestones.length > 0) {
+        await insertMilestones({
+          variables: {
+            objects: allMilestones
+          }
+        });
+      }
+
+      alert('¡Contrato e Hitos guardados exitosamente en Neon! 🚀');
     } catch (err: any) {
       console.error('Error saving to Neon:', err);
       setError('Error al guardar en la base de datos: ' + err.message);
@@ -269,14 +320,33 @@ export function ContractUpload() {
             <Bot className="w-5 h-5 text-purple-400" />
             <h3 className="text-white font-medium">Análisis del Agente BARI</h3>
             {contractData && !isAnalyzing && (
-              <button
-                onClick={handleSaveToNeon}
-                disabled={isSaving}
-                className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 rounded-lg text-[10px] font-bold uppercase transition-all"
-              >
-                {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                {isSaving ? 'Guardando...' : 'Guardar en Base de Datos'}
-              </button>
+              <div className="ml-auto flex items-center gap-3">
+                {/* PM Selector */}
+                <div className="flex items-center gap-2 px-2 py-1 bg-white/5 border border-white/10 rounded-lg">
+                  <Users className="w-3 h-3 text-purple-400" />
+                  <select
+                    value={selectedPmId || ''}
+                    onChange={(e) => setSelectedPmId(e.target.value)}
+                    className="bg-transparent text-[10px] text-gray-300 outline-none cursor-pointer border-none p-0 focus:ring-0"
+                  >
+                    <option value="" disabled className="bg-[#0f0f17]">Seleccionar PM</option>
+                    {userData?.users?.map((user: any) => (
+                      <option key={user.id} value={user.id} className="bg-[#0f0f17]">
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleSaveToNeon}
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30 rounded-lg text-[10px] font-bold uppercase transition-all"
+                >
+                  {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                  {isSaving ? 'Guardando...' : 'Guardar en Base de Datos'}
+                </button>
+              </div>
             )}
             {isAnalyzing && (
               <div className="flex gap-1 ml-auto">

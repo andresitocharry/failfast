@@ -6,6 +6,7 @@ export const GET_CONTRACTS = gql`
     contracts {
       id
       title
+      summary
       client
       type
       status
@@ -24,6 +25,7 @@ export const GET_CONTRACT_DETAIL = gql`
     contracts_by_pk(id: $id) {
       id
       title
+      summary
       client
       type
       status

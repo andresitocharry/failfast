@@ -211,6 +211,20 @@ function OverviewTab({ contract }: { contract: any }) {
         </div>
       </div>
 
+      {/* Audit History (Summary) */}
+      <div className="bg-amber-500/5 rounded-lg p-5 border border-amber-500/20 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-all">
+          <Bot className="w-12 h-12 text-amber-500" />
+        </div>
+        <div className="flex items-center gap-2 mb-4">
+          <CheckCircle2 className="w-5 h-5 text-amber-500" />
+          <h3 className="text-amber-500 font-bold uppercase tracking-wider text-[10px]">Informe Histórico del Agente Auditor</h3>
+        </div>
+        <div className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed font-serif italic">
+          {contract.summary}
+        </div>
+      </div>
+
       {/* Contract PDF Preview */}
       {contract.pdf_url && (
         <div className="bg-[#0f0f17] rounded-lg p-4 border border-[#1a1a24]">

@@ -7,12 +7,15 @@ class Evidence(BaseModel):
     timestamp: str
 
 class ActionItem(BaseModel):
-    id: str = Field(..., description="Unique identifier for the action")
+    id: str = Field(..., description="Unique identifier for the action (ej: M1-C1)")
     description: str
     criteria: str = Field(..., description="Success criteria to verify this action")
     insight: Optional[str] = Field(None, description="A very brief expert insight or consideration for this task.")
     citation: Optional[str] = Field(None, description="Exact quote from the contract that justifies this task.")
-    status: Literal["PENDING", "IN_PROGRESS", "COMPLETED", "BLOCKED"] = "PENDING"
+    status: Literal["pending", "in-progress", "completed", "delayed"] = "pending"
+    due_date: str = Field(..., description="Fecha límite estimada para esta tarea (DD Mes YYYY).")
+    milestone_value: str = Field(..., description="Peso porcentual de esta tarea (ej: 10%).")
+    deliverables: List[str] = Field(default_factory=list, description="Lista de entregables técnicos para esta tarea.")
     evidence: Optional[List[Evidence]] = []
 
 class Phase(BaseModel):
