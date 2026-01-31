@@ -1,0 +1,68 @@
+{
+    "organization": "BARI Infraestructuras S.A.S.",
+    "purchasing_org": "1000",
+    "vendors": [
+        {
+            "id": "40001021",
+            "name": "IMPER-SOLUCIONES TÉCNICAS S.A.S.",
+            "category": "Mantenimiento y Obra Civil",
+            "specialty": "Impermeabilización de cubiertas y sótanos",
+            "tax_id": "901.234.567-8"
+        },
+        {
+            "id": "40001022",
+            "name": "CONSTRUCCIONES Y CUBIERTAS BOGOTÁ",
+            "category": "Obra Civil",
+            "specialty": "Arreglo de techos e infraestructuras",
+            "tax_id": "800.111.222-3"
+        },
+        {
+            "id": "40001023",
+            "name": "QUÍMICOS PARA CONSTRUCCIÓN CO",
+            "category": "Suministros",
+            "specialty": "Venta de mantos, resinas y asfalto",
+            "tax_id": "900.555.666-4"
+        },
+        {
+            "id": "40001024",
+            "name": "LOGÍSTICA PESADA BARI",
+            "category": "Transporte",
+            "specialty": "Transporte de escombros y materiales",
+            "tax_id": "860.000.111-0"
+        }
+    ],
+    "cost_centers": [
+        {
+            "id": "500-1010",
+            "description": "Mantenimiento Preventivo de Sedes",
+            "area": "Operaciones",
+            "company_code": "1000"
+        },
+        {
+            "id": "500-2020",
+            "description": "Proyectos de Infraestructura - Ciudadela",
+            "area": "Desarrollo Urbano",
+            "company_code": "1000"
+        },
+        {
+            "id": "500-3030",
+            "description": "Gestión de Activos Críticos",
+            "area": "Administración",
+            "company_code": "1000"
+        }
+    ],
+    "material_groups": [
+        {
+            "code": "OBR-IMP-01",
+            "description": "Servicio de Impermeabilización Profesional"
+        },
+        {
+            "code": "OBR-CIV-02",
+            "description": "Mantenimiento General de Obra Gris"
+        },
+        {
+            "code": "MAT-CON-05",
+            "description": "Manto Asfáltico y Resinas Epóxicas"
+        }
+    ]
+}

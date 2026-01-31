@@ -11,6 +11,19 @@ from pypdf import PdfReader
 # Setup Logger
 logger = logging.getLogger("uvicorn.error")
 
+# Load Master Data (Mock RAG)
+def load_master_data():
+    try:
+        path = "app/data/bari_master_data.json"
+        import json
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Failed to load master data: {e}")
+        return {}
+
+master_data = load_master_data()
+
 def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
     """
     Extracts text from a PDF file provided as bytes.
@@ -44,42 +57,76 @@ if not settings.GOOGLE_API_KEY:
     print("Warning: GOOGLE_API_KEY not found in settings.")
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
+    model="gemini-pro-latest",
     google_api_key=settings.GOOGLE_API_KEY,
     temperature=0
 )
 
-# Define the Prompt
-extraction_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert legal AI. Extract the contract structure, parties, and actionable items into the specified JSON format. "
-               "Divide the contract strictly into 3 phases: INITIATION, EXECUTION, CLOSURE. "
-               "For each phase, list specific Action Items with clear success criteria. "
-               "Also provide a concise summary of what the contract is about."),
-    ("human", "{text}")
-])
+from app.services.chroma_service import query_kb, initialize_knowledge_base
+
+# Initialize Knowledge Base once at startup
+try:
+    initialize_knowledge_base()
+except Exception as e:
+    logger.error(f"Failed to init ChromaDB: {e}")
+
+# Define the Professional Prompt
+def get_prompt(context_data: str):
+    system_instructions = f"""
+You are a Lead AI Architect specializing in SAP/ERP integration for BARI Infraestructuras. 
+Your analysis must be methodical and transparent.
+
+REFERENCE KNOWLEDGE (From BARI ChromaDB):
+{context_data}
+
+REQUIRED ANALYSIS STEPS (Chain of Thought):
+1. **Analyze Parties**: Match names in the text with the 'vendors' retrieved. Select the most precise Vendor ID.
+2. **Contextual Classification**: Determine if the contract is Maintenance, New Project, or Supply. Match with the relevant Cost Center Area.
+3. **Phase Structuring**: Break down the milestones. For Construction/Waterproofing, look for 'Pruebas de Inundación' or 'Garantías de Estanqueidad' for Closure.
+4. **Draft Reasoning**: In 'thought_process', explain *why* you chose these ERP mappings based on the retrieved policies.
+
+INSTRUCTIONS:
+- IDENTIFY Vendor ID from master data.
+- ASSIGN Cost Center based on organizational area.
+- CLASSIFY Material Group.
+- DEFINE EXACTLY 3 Phases (INITIATION, EXECUTION, CLOSURE).
+- **CRITICAL**: For each identified Action Item, provide:
+    * `insight`: A super-brief professional consideration or risk (e.g., 'Exigir prueba de inundación').
+    * `citation`: The exact text snippet from the contract.
+
+Output MUST be a perfectly structured JSON.
+"""
+    return ChatPromptTemplate.from_messages([
+        ("system", system_instructions),
+        ("human", "{text}")
+    ])
 
 # Create the structured output chain
 structured_llm = llm.with_structured_output(ContractSchema)
-extraction_chain = extraction_prompt | structured_llm
 
 def extract_contract_data(param: str) -> ContractSchema:
     """
-    Simulates extracting data from a PDF text.
-    In a real scenario, 'param' would be the full text of the PDF.
+    Extracts data using REAL RAG (ChromaDB) and Gemini.
     """
     try:
         if not settings.GOOGLE_API_KEY:
             raise ValueError("Google API Key missing")
             
-        logger.info("   --> Invoking Gemini Chain...")
+        # 🟢 STEP 1: SEMANTIC SEARCH (RAG)
+        logger.info("   --> Searching ChromaDB for relevant BARI context...")
+        relevant_context = query_kb(param, n_results=5)
+        context_str = "\n".join(relevant_context)
+        
+        # 🔵 STEP 2: DYNAMIC PROMPT
+        current_prompt = get_prompt(context_str)
+        extraction_chain = current_prompt | structured_llm
+
+        logger.info("   --> Invoking Gemini Chain (Enterprise RAG Mode)...")
         start_time = time.time()
         result = extraction_chain.invoke({"text": param})
         logger.info(f"   --> Gemini Response received in {time.time() - start_time:.2f}s")
-        logger.info(f"   --> Gemini Raw Output: {result}")
         
         if result is None:
-            with open("debug_gemini_response.txt", "w", encoding="utf-8") as f:
-                f.write("ERROR: Gemini returned None\n")
             raise ValueError("Gemini returned None (Failed to generate structured output)")
         
         with open("debug_gemini_response.txt", "w", encoding="utf-8") as f:
@@ -87,6 +134,7 @@ def extract_contract_data(param: str) -> ContractSchema:
             
         return result
     except Exception as e:
+        # ... existing fallback code ...
         # Fallback for demo if API fails or Key missing
         logger.error(f"Extraction failed: {e}")
         import traceback
@@ -97,15 +145,43 @@ def extract_contract_data(param: str) -> ContractSchema:
             
         logger.info("Returning mock data due to error.")
         return ContractSchema(
-            contract_id="MOCK-001",
-            title="Contrato de Servicio - Fallback Mock (Gemini Error)",
-            summary="Este es un resumen simulado porque ocurrió un error al conectar con Gemini. El contrato trata sobre servicios de consultoría.",
-            parties=["Empresa A", "Proveedor B"],
+            contract_id="MOCK-SAP-001",
+            title="Contrato de Suministro Estándar (Fallback)",
+            summary="Análisis de contingencia por error de conexión con Gemini.",
+            thought_process="Protocolo de respaldo activado.",
+            erp_vendor_id="100045",
+            erp_cost_center="CC-OPS-100",
+            erp_material_group="SERV-002",
+            erp_purchasing_org="1000",
+            parties=["BARI S.A.S.", "ENTIDAD EXTERNA"],
             phases=[
-                Phase(name="INITIATION", description="Preparación", actions=[
-                    ActionItem(id="ACT-01", description="Firmar acta de inicio", criteria="Documento firmado por ambas partes")
-                ]),
-                Phase(name="EXECUTION", description="Desarrollo", actions=[]),
-                Phase(name="CLOSURE", description="Finalización", actions=[])
-            ]
+                Phase(name="INITIATION", description="Preparación Legal", actions=[
+                    ActionItem(
+                        id="ACT-01", 
+                        description="Validación de Pólizas", 
+                        criteria="Póliza aprobada en sistema",
+                        insight="Fundamental para mitigar riesgos de ejecución inicial.",
+                        citation="Cláusula Quinta: Garantías y Pólizas."
+                    )
+                ], status="PENDING"),
+                Phase(name="EXECUTION", description="Prestación del Servicio", actions=[
+                    ActionItem(
+                        id="ACT-02", 
+                        description="Reporte Mensual de Avance", 
+                        criteria="Documento PDF cargado",
+                        insight="Control de KPIs críticos para desembolsos.",
+                        citation="Cláusula Novena: Obligaciones del Contratista."
+                    )
+                ], status="PENDING"),
+                Phase(name="CLOSURE", description="Liquidación", actions=[
+                    ActionItem(
+                        id="ACT-03", 
+                        description="Firma de Acta de Liquidación", 
+                        criteria="Acta firmada digitalmente",
+                        insight="Cierra formalmente las obligaciones legales y contables.",
+                        citation="Cláusula Décimo Segunda: Liquidación."
+                    )
+                ], status="PENDING")
+            ],
+            current_phase="INITIATION"
         )
