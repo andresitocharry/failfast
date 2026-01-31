@@ -16,6 +16,15 @@ export const GET_CONTRACTS = gql`
       start_date
       end_date
       pdf_url
+      milestones {
+        id
+        name
+        phase
+        due_date
+        status
+        value
+        deliverables
+      }
     }
   }
 `;

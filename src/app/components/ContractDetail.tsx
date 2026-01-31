@@ -352,7 +352,7 @@ function MilestonesTab({ milestones }: { milestones: any }) {
             </div>
 
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-gray-500">Fecha límite: {milestone.dueDate}</span>
+              <span className="text-xs text-gray-500">Fecha límite: {milestone.due_date}</span>
             </div>
 
             <div>

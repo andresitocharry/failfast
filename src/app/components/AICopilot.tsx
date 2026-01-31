@@ -1,42 +1,42 @@
-import { Sparkles, CheckCircle, FileText, Database, ArrowRight, GitBranch, FileCheck, Bot } from "lucide-react";
+import { Sparkles, CheckCircle, Database, ArrowRight, FileCheck, Bot } from "lucide-react";
 import { motion } from "motion/react";
 
 export function AICopilot() {
   const pendingActions = [
     {
-      id: "GR-9902",
-      type: "gr",
-      milestone: "Hito de Ejecución #4: Entrega de Diseño",
+      id: "GR-WP-0102",
+      type: "gr" as const,
+      milestone: "Hito de Suministro: Membrana Poliuretánica BARI-X1",
       evidence: [
-        "4 archivos subidos al repositorio GitHub",
-        "Cliente aprobó diseño en Figma (12 Oct)",
-        "Sprint cerrado en Jira (ticket #JIR-445)"
+        "Remisión de proveedor validada contra Pedido SAP #45001",
+        "Certificado de calidad de lote #XP-2026-B adjunto",
+        "Registro fotográfico de descarga en almacén de obra verificado"
       ],
       confidence: 98,
-      value: "30%",
+      value: "15%",
       actionNeeded: "Aprobar y Finalizar GR",
     },
     {
-      id: "GR-8821",
-      type: "gr",
-      milestone: "Hito de Ejecución #2: Integración Backend",
+      id: "HITO-EJ-04",
+      type: "gr" as const,
+      milestone: "Hito de Ejecución #2: Preparación de Superficie",
       evidence: [
-        "Pull request #234 merged a main",
-        "Tests unitarios 100% pasando",
-        "QA validó en staging (29 Ene)"
+        "Informe de interventoría aprobado (Ing. Carlos Ruíz)",
+        "Medición de humedad de placa < 4% (Escáner Positector)",
+        "Acta de liberación de área firmada por Residente de Obra"
       ],
       confidence: 95,
-      value: "25%",
+      value: "20%",
       actionNeeded: "Aprobar y Liberar Pago",
     },
     {
-      id: "WO-1523",
-      type: "wo",
-      milestone: "Work Order: Deploy a Producción",
+      id: "WO-EST-05",
+      type: "wo" as const,
+      milestone: "Work Order: Prueba de Estanqueidad (Zona A)",
       evidence: [
-        "Todos los prerrequisitos completados",
-        "Infraestructura provisionada",
-        "Ventana de mantenimiento programada"
+        "48 horas de inundación completadas sin filtraciones",
+        "Verificación por Agente BARI-Vision (Nivel de agua estable)",
+        "Sellado de bajantes y puntos críticos validado"
       ],
       confidence: 92,
       value: "N/A",
