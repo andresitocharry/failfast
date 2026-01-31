@@ -7,6 +7,16 @@ import shutil
 
 app = FastAPI(title="Agentic Contract ERP AI", version="0.1.0")
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class MilestoneCheckRequest(BaseModel):
     contract: ContractSchema
     action_id: str
@@ -22,16 +32,20 @@ async def analyze_contract(file: UploadFile = File(...)):
     Ingests a PDF contract, extracts structure using LLM, and returns JSON.
     """
     try:
-        # Save temp file or read content
-        # For MVP, we pass text directly to extractor. 
-        # Ideally use OCR/PyPDF2 here.
-        # content = await file.read()
-        # text = content.decode("utf-8") # Assuming text file for MVP 
+        content = await file.read()
         
-        # Simulating text extraction for now to keep dependencies simple
-        simulated_text = f"Simulated content of {file.filename}"
+        # Determine file type (basic check)
+        if file.filename.endswith(".pdf"):
+            from app.services.extractor import extract_text_from_pdf_bytes
+            text = extract_text_from_pdf_bytes(content)
+        else:
+            # Assume text/md
+            text = content.decode("utf-8")
         
-        contract_data = extract_contract_data(simulated_text)
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="Could not extract text from file.")
+            
+        contract_data = extract_contract_data(text)
         return contract_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
