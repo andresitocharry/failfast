@@ -1,4 +1,4 @@
-import { AlertCircle, Clock, TrendingUp, Activity, Bot } from "lucide-react";
+import { AlertCircle, Activity, Bot } from "lucide-react";
 import { PhaseColumn, type ActionCardProps } from "@/app/components/Timeline";
 import { AICopilot } from "@/app/components/AICopilot";
 import { useState, useEffect } from "react";
@@ -128,20 +128,25 @@ export function ProjectManagerDashboard() {
                 </div>
               </div>
 
+
               {/* AI-Generated Key Indicators */}
               <div className="flex gap-4">
-                <Indicator
-                  icon={Activity}
-                  label="Salud del Proyecto"
-                  value={`${contract.health}% ${contract.health >= 80 ? 'Estable' : contract.health >= 60 ? 'Medio' : 'Crítico'}`}
-                  color={contract.health >= 80 ? 'green' : contract.health >= 60 ? 'yellow' : 'red'}
-                />
-                <Indicator
-                  icon={AlertCircle}
-                  label="Riesgo de Retraso"
-                  value={riskLevel === 'bajo' ? 'Bajo' : riskLevel === 'medio' ? 'Medio' : 'Alto'}
-                  color={riskLevel === 'bajo' ? 'blue' : riskLevel === 'medio' ? 'yellow' : 'red'}
-                />
+                {contract.health !== undefined && contract.health !== null && (
+                  <Indicator
+                    icon={Activity}
+                    label="Salud del Proyecto"
+                    value={`${contract.health}% ${contract.health >= 80 ? 'Estable' : contract.health >= 60 ? 'Medio' : 'Crítico'}`}
+                    color={contract.health >= 80 ? 'green' : contract.health >= 60 ? 'yellow' : 'red'}
+                  />
+                )}
+                {riskLevel && (
+                  <Indicator
+                    icon={AlertCircle}
+                    label="Riesgo de Retraso"
+                    value={riskLevel === 'bajo' ? 'Bajo' : riskLevel === 'medio' ? 'Medio' : 'Alto'}
+                    color={riskLevel === 'bajo' ? 'blue' : riskLevel === 'medio' ? 'yellow' : 'red'}
+                  />
+                )}
                 <Indicator
                   icon={Bot}
                   label="Próxima Acción"

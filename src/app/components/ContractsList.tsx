@@ -45,8 +45,8 @@ function ContractCard({
     completed: { icon: CheckCircle2, label: "Completado", color: "text-green-400 bg-green-500/10 border-green-500/30" },
   };
 
-  const typeInfo = typeConfig[contract.type];
-  const statusInfo = statusConfig[contract.status];
+  const typeInfo = typeConfig[contract.type as keyof typeof typeConfig] || typeConfig.perforacion;
+  const statusInfo = statusConfig[contract.status as keyof typeof statusConfig] || statusConfig.active;
   const TypeIcon = typeInfo.icon;
   const StatusIcon = statusInfo.icon;
 
@@ -91,8 +91,8 @@ function ContractCard({
             className={cn(
               "h-full rounded-full",
               contract.status === "active" ? "bg-blue-500" :
-              contract.status === "at-risk" ? "bg-yellow-500" :
-              "bg-green-500"
+                contract.status === "at-risk" ? "bg-yellow-500" :
+                  "bg-green-500"
             )}
             style={{ width: `${contract.progress}%` }}
           />
