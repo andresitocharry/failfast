@@ -19,7 +19,7 @@ class ActionItem(BaseModel):
     evidence: Optional[List[Evidence]] = []
 
 class Phase(BaseModel):
-    name: Literal["INITIATION", "EXECUTION", "CLOSURE"]
+    name: Literal["INICIO", "EJECUCION", "CIERRE"]
     description: str
     actions: List[ActionItem]
     status: Literal["PENDING", "ACTIVE", "COMPLETED"] = "PENDING"
@@ -38,7 +38,7 @@ class ContractSchema(BaseModel):
     
     parties: List[str]
     phases: List[Phase]
-    current_phase: Literal["INITIATION", "EXECUTION", "CLOSURE"] = "INITIATION"
+    current_phase: Literal["INICIO", "EJECUCION", "CIERRE"] = "INICIO"
     
     # Audit Layer Fields
     audit_summary: str = Field(..., description="Resumen del Agente Auditor sobre el cumplimiento de reglas de negocio.")

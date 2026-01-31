@@ -84,7 +84,7 @@ FLUJO DE ANÁLISIS REQUERIDO:
 
 REGLAS ESTRÍCTAS:
 - **Idioma**: Español técnico colombiano.
-- **Fases (Phases)**: Divide en INITIATION, EXECUTION, CLOSURE. 
+- **Fases (Phases)**: Divide en INICIO, EJECUCION, CIERRE. 
   - Mínimo 4 tareas por fase (si el texto lo permite). Sé extremadamente detallista.
   - Cada tarea debe incluir un `insight` experto y una `citation` EXACTA del texto.
 - **Resumen Auditor (audit_summary)**: Informe ejecutivo sobre la viabilidad del contrato. Debe validar si la clasificación de fases y actividades realizada por el extractor es lógica y coherente con los estándares de BARI. Identifica inconsistencias entre las obligaciones legales y el plan de ejecución propuesto.
@@ -157,7 +157,7 @@ def extract_contract_data(param: str) -> ContractSchema:
             erp_purchasing_org="1000",
             parties=["BARI S.A.S.", "ENTIDAD EXTERNA"],
             phases=[
-                Phase(name="INITIATION", description="Preparación Legal", actions=[
+                Phase(name="INICIO", description="Preparación Legal", actions=[
                     ActionItem(
                         id="M1-C1", 
                         description="Validación de Pólizas", 
@@ -171,7 +171,7 @@ def extract_contract_data(param: str) -> ContractSchema:
                     )
                 ], status="PENDING")
             ],
-            current_phase="INITIATION",
+            current_phase="INICIO",
             audit_summary="REVISIÓN DE RESPALDO: Se ha detectado un contrato de suministro estándar.",
             audit_insights=["Validación de pólizas pendiente."],
             client="BARI Fallback Client",
