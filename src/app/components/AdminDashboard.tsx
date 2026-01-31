@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@apollo/client";
 import { GET_CONTRACTS, GET_USERS } from "@/app/data/queries";
-import { Activity, Zap, TrendingUp, Bot, Users, FileText, DollarSign } from "lucide-react";
+import { Activity, TrendingUp, Bot, Users, FileText, DollarSign } from "lucide-react";
 import { ContractUpload } from "@/app/components/ContractUpload";
 import { ContractsList } from "@/app/components/ContractsList";
 import { ContractDetail } from "@/app/components/ContractDetail";
@@ -58,7 +58,7 @@ export function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl text-white mb-1">Panel de Control de Agentes</h1>
-              <p className="text-sm text-gray-500">Configurador de Agentes • Sector Petrolero</p>
+              <p className="text-sm text-gray-500">Configurador de Agentes • Impermeabilización e Infraestructura</p>
             </div>
 
             <div className="flex items-center gap-4">
