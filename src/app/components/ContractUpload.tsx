@@ -19,6 +19,7 @@ interface Phase {
 interface ContractData {
   contract_id: string;
   title: string;
+  summary: string;
   parties: string[];
   phases: Phase[];
 }
@@ -46,14 +47,16 @@ export function ContractUpload() {
       });
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.detail || `Error ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
       setContractData(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Upload error:", err);
-      setError("Error al conectar con el servicio de IA. Asegúrate de que el backend esté corriendo.");
+      // Show the actual error message if available
+      setError(err.message || "Error desconocido al procesar el archivo.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -98,10 +101,10 @@ export function ContractUpload() {
           </div>
 
           <div className="bg-[#1a1a24] rounded-lg p-6 flex flex-col items-center justify-center h-[300px] text-gray-500 italic">
-             Vista previa no disponible en MVP
+            Vista previa no disponible en MVP
           </div>
-          
-          <button 
+
+          <button
             onClick={() => {
               setUploadedFile(null);
               setContractData(null);
@@ -129,16 +132,16 @@ export function ContractUpload() {
 
           <div className="space-y-4">
             {error && (
-               <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 text-red-400">
-                 <AlertCircle className="w-5 h-5" />
-                 <p className="text-sm">{error}</p>
-               </div>
+              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3 text-red-400">
+                <AlertCircle className="w-5 h-5" />
+                <p className="text-sm">{error}</p>
+              </div>
             )}
 
             {isAnalyzing && (
               <>
                 <AnalysisStep label="Leyendo documento..." status="processing" delay={0} />
-                <AnalysisStep label="Consultando Gemini 3 Pro..." status="processing" delay={0.5} />
+                <AnalysisStep label="Consultando Gemini 2.0 Flash..." status="processing" delay={0.5} />
                 <AnalysisStep label="Extrayendo estructura del proyecto..." status="processing" delay={1} />
               </>
             )}
@@ -152,16 +155,17 @@ export function ContractUpload() {
                 className="mt-2 space-y-4"
               >
                 <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                   <h4 className="text-white font-medium">{contractData.title}</h4>
-                   <p className="text-xs text-gray-400 mt-1">Partes: {contractData.parties.join(", ")}</p>
+                  <h4 className="text-white font-medium">{contractData.title}</h4>
+                  <p className="text-sm text-gray-300 mt-2 mb-2 italic">"{contractData.summary}"</p>
+                  <p className="text-xs text-gray-400">Partes: {contractData.parties.join(", ")}</p>
                 </div>
 
                 <p className="text-sm text-gray-400 mb-2">Estructura Detectada:</p>
-                
+
                 <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                   {contractData.phases.map((phase, idx) => {
-                     const colors: Array<"blue" | "purple" | "cyan"> = ["blue", "purple", "cyan"];
-                     return (
+                    const colors: Array<"blue" | "purple" | "cyan"> = ["blue", "purple", "cyan"];
+                    return (
                       <PhaseColumn
                         key={idx}
                         phase={phase.name}
@@ -169,7 +173,7 @@ export function ContractUpload() {
                         color={colors[idx % 3]}
                         actions={phase.actions.map(a => a.description)}
                       />
-                     );
+                    );
                   })}
                 </div>
 
@@ -196,14 +200,14 @@ export function ContractUpload() {
       onClick={handleClick}
       className="border-2 border-dashed border-[#2a2a34] rounded-xl p-12 text-center hover:border-purple-500/50 transition-all cursor-pointer bg-[#0f0f17]"
     >
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={handleFileChange} 
-        className="hidden" 
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
         accept=".pdf,.txt,.md"
       />
-      
+
       <div className="flex flex-col items-center gap-4">
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
           <Upload className="w-10 h-10 text-purple-400" />
@@ -276,8 +280,8 @@ function PhaseColumn({
     <div className={`flex flex-col ${colorClasses[color]} rounded-lg border overflow-hidden`}>
       <div className="flex items-center justify-between p-3 bg-black/20">
         <div>
-           <span className="font-medium block">{phase}</span>
-           <span className="text-xs opacity-70">{description}</span>
+          <span className="font-medium block">{phase}</span>
+          <span className="text-xs opacity-70">{description}</span>
         </div>
         <span className="text-xs px-2 py-1 rounded bg-black/20">{actions.length} acciones</span>
       </div>

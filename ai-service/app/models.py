@@ -22,6 +22,7 @@ class Phase(BaseModel):
 class ContractSchema(BaseModel):
     contract_id: str
     title: str
+    summary: str = Field(..., description="A brief summary of the contract content and purpose.")
     parties: List[str]
     phases: List[Phase]
     current_phase: Literal["INITIATION", "EXECUTION", "CLOSURE"] = "INITIATION"
