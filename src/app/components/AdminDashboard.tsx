@@ -163,7 +163,10 @@ export function AdminDashboard() {
               {/* Contract Detail */}
               <div className="flex-1 bg-[#0f0f17] rounded-lg border border-[#1a1a24] overflow-hidden">
                 {selectedContractId ? (
-                  <ContractDetail contractId={selectedContractId} />
+                  <ContractDetail
+                    contractId={selectedContractId}
+                    contractData={contracts.find((c: any) => c.id === selectedContractId)}
+                  />
                 ) : (
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center">

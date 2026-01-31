@@ -3,7 +3,7 @@ import { useQuery } from "@apollo/client";
 import { GET_CONTRACT_DETAIL } from "@/app/data/queries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import {
-  MapPin, Calendar, DollarSign, TrendingUp, Users, FileText,
+  MapPin, Calendar, DollarSign, TrendingUp, FileText,
   CheckCircle2, Clock, AlertCircle, Bot, Download, Eye
 } from "lucide-react";
 import { cn } from "@/app/components/ui/utils";
@@ -11,22 +11,67 @@ import { motion } from "motion/react";
 
 interface ContractDetailProps {
   contractId: string;
+  contractData?: any;
 }
 
-export function ContractDetail({ contractId }: ContractDetailProps) {
+export function ContractDetail({ contractId, contractData: propContractData }: ContractDetailProps) {
   const { data, loading, error } = useQuery(GET_CONTRACT_DETAIL, {
     variables: { id: contractId },
   });
   const [activeTab, setActiveTab] = useState("overview");
 
-  if (loading) return <div className="h-full flex items-center justify-center text-gray-500">Cargando detalles...</div>;
-  if (error) return <div className="h-full flex items-center justify-center text-red-500">Error al cargar contrato</div>;
-  if (!data || !data.contracts_by_pk) return <div className="h-full flex items-center justify-center text-gray-500">Contrato no encontrado</div>;
+  // Use query data when available, otherwise use prop data as fallback during loading
+  const contract = data?.contracts_by_pk || propContractData;
 
-  const contract = data.contracts_by_pk;
+  if (loading && !propContractData) return <div className="h-full flex items-center justify-center text-gray-500">Cargando detalles...</div>;
+  if (error && !propContractData) {
+    // Check if we have pdf_url in the contract data
+    const pdfUrl = contract?.pdf_url;
+    if (pdfUrl) {
+      return (
+        <div className="h-full flex flex-col items-center justify-center p-8 gap-6">
+          <div className="text-center mb-4">
+            <h3 className="text-xl text-white mb-2">Vista Previa del Contrato</h3>
+            <p className="text-sm text-gray-400">El contrato original está disponible para visualización</p>
+          </div>
+          <div className="w-full max-w-2xl">
+            <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="block relative w-64 aspect-[3/4] mx-auto group cursor-pointer overflow-hidden rounded-lg border border-gray-700 shadow-xl transition-all hover:scale-105 hover:border-purple-500">
+              <img
+                src={pdfUrl.endsWith('.pdf') ? pdfUrl.replace('.pdf', '.jpg') : pdfUrl}
+                alt="Contract Preview"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "https://res.cloudinary.com/demo/image/upload/v1680194689/pdf-icon.png";
+                }}
+              />
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Eye className="w-12 h-12 text-white" />
+              </div>
+            </a>
+            <div className="flex gap-3 justify-center mt-6">
+              <button
+                onClick={() => window.open(pdfUrl, '_blank')}
+                className="px-6 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all border border-blue-500/50 flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                Ver PDF Completo
+              </button>
+              <button
+                onClick={() => window.open(pdfUrl, '_blank')}
+                className="px-6 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all border border-purple-500/50 flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                Descargar
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return <div className="h-full flex items-center justify-center text-red-500">Error al cargar contrato</div>;
+  }
+  if (!contract) return <div className="h-full flex items-center justify-center text-gray-500">Contrato no encontrado</div>;
 
   // Transform team members format if necessary or ensure query matches
-  const team = contract.contract_team_members.map((tm: any) => tm.user);
+  const team = contract.contract_team_members?.map((tm: any) => tm.user) || [];
 
   // Safe project manager name handling (assuming relation exists, otherwise fallback)
   const pmName = contract.project_manager?.name || "No asignado";
@@ -88,7 +133,7 @@ export function ContractDetail({ contractId }: ContractDetailProps) {
           <QuickStat label="Fase Actual" value={(contract.phase || '').toUpperCase()} />
           <QuickStat label="Riesgo" value={(contract.risk_level || '').toUpperCase()} />
           <QuickStat label="Equipo" value={`${team.length} miembros`} />
-          <QuickStat label="Hitos" value={`${contract.milestones.length} totales`} />
+          <QuickStat label="Hitos" value={`${contract.milestones?.length || 0} totales`} />
         </div>
       </div>
 
@@ -115,7 +160,7 @@ export function ContractDetail({ contractId }: ContractDetailProps) {
           </TabsContent>
 
           <TabsContent value="milestones" className="mt-0">
-            <MilestonesTab milestones={contract.milestones} />
+            <MilestonesTab milestones={contract.milestones || []} />
           </TabsContent>
 
           <TabsContent value="team" className="mt-0">
@@ -123,7 +168,7 @@ export function ContractDetail({ contractId }: ContractDetailProps) {
           </TabsContent>
 
           <TabsContent value="documents" className="mt-0">
-            <DocumentsTab documents={contract.documents} />
+            <DocumentsTab documents={contract.documents || []} />
           </TabsContent>
         </div>
       </Tabs>
@@ -165,6 +210,45 @@ function OverviewTab({ contract }: { contract: any }) {
           </div>
         </div>
       </div>
+
+      {/* Contract PDF Preview */}
+      {contract.pdf_url && (
+        <div className="bg-[#0f0f17] rounded-lg p-4 border border-[#1a1a24]">
+          <h3 className="text-white mb-3">Contrato Original</h3>
+          <div className="flex gap-4">
+            <a href={contract.pdf_url} target="_blank" rel="noopener noreferrer" className="block relative w-48 aspect-[3/4] group cursor-pointer overflow-hidden rounded-lg border border-gray-700 shadow-xl transition-all hover:scale-105 hover:border-purple-500 flex-shrink-0">
+              <img
+                src={contract.pdf_url.endsWith('.pdf') ? contract.pdf_url.replace('.pdf', '.jpg') : contract.pdf_url}
+                alt="Contract Preview"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "https://res.cloudinary.com/demo/image/upload/v1680194689/pdf-icon.png";
+                }}
+              />
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Eye className="w-8 h-8 text-white" />
+              </div>
+            </a>
+            <div className="flex-1 flex flex-col justify-center gap-3">
+              <p className="text-sm text-gray-400">Documento del contrato disponible para visualización y descarga</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => window.open(contract.pdf_url, '_blank')}
+                  className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all border border-blue-500/50 flex items-center gap-2 text-sm">
+                  <Eye className="w-4 h-4" />
+                  Ver PDF Completo
+                </button>
+                <button
+                  onClick={() => window.open(contract.pdf_url, '_blank')}
+                  className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all border border-purple-500/50 flex items-center gap-2 text-sm">
+                  <Download className="w-4 h-4" />
+                  Descargar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Monitoring */}
       <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-lg p-4 border border-blue-500/30">

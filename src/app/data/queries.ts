@@ -14,6 +14,7 @@ export const GET_CONTRACTS = gql`
       location
       start_date
       end_date
+      pdf_url
     }
   }
 `;
@@ -34,6 +35,7 @@ export const GET_CONTRACT_DETAIL = gql`
       phase
       health
       risk_level
+      pdf_url
       project_manager_id
       project_manager {
         name

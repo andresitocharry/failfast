@@ -1,4 +1,4 @@
-import { Upload, FileText, CheckCircle2, Loader2, X, AlertCircle, ExternalLink } from "lucide-react";
+import { Upload, CheckCircle2, Loader2, X, AlertCircle, ExternalLink } from "lucide-react";
 import { useState, useRef } from "react";
 
 const CLOUDINARY_CLOUD_NAME = "datll7nec";
