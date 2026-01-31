@@ -1,18 +1,27 @@
 import { useState } from "react";
+import { useQuery } from "@apollo/client";
+import { GET_CONTRACTS, GET_USERS } from "@/app/data/queries";
 import { Activity, Zap, TrendingUp, Bot, Users, FileText, DollarSign } from "lucide-react";
 import { ContractUpload } from "@/app/components/ContractUpload";
 import { ContractsList } from "@/app/components/ContractsList";
 import { ContractDetail } from "@/app/components/ContractDetail";
-import { mockContracts, mockUsers } from "@/app/data/mockData";
 
 export function AdminDashboard() {
   const [view, setView] = useState<"dashboard" | "contracts" | "users">("dashboard");
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
 
-  const selectedContract = mockContracts.find(c => c.id === selectedContractId);
-  const activeContracts = mockContracts.filter(c => c.status === "active").length;
+  const { data: contractsData, loading: contractsLoading } = useQuery(GET_CONTRACTS);
+  const { data: usersData, loading: usersLoading } = useQuery(GET_USERS);
+
+  const contracts = contractsData?.contracts || [];
+  const users = usersData?.users || [];
+
+  const activeContracts = contracts.filter((c: any) => c.status === "active").length;
+  // Calculate total value roughly or use valid parsing if value allows
   const totalValue = "$41.8M";
-  const atRiskContracts = mockContracts.filter(c => c.status === "at-risk").length;
+  const atRiskContracts = contracts.filter((c: any) => c.status === "at-risk").length;
+
+  if (contractsLoading || usersLoading) return <div className="p-8 text-white">Cargando dashboard...</div>;
 
   return (
     <div className="flex-1 bg-[#0a0a0f] overflow-hidden flex">
@@ -30,14 +39,14 @@ export function AdminDashboard() {
             onClick={() => setView("contracts")}
             icon={FileText}
             label="Contratos"
-            badge={mockContracts.length}
+            badge={contracts.length}
           />
           <NavButton
             active={view === "users"}
             onClick={() => setView("users")}
             icon={Users}
             label="Usuarios"
-            badge={mockUsers.length}
+            badge={users.length}
           />
         </nav>
       </div>
@@ -75,7 +84,7 @@ export function AdminDashboard() {
                   icon={FileText}
                   label="Contratos Activos"
                   value={activeContracts.toString()}
-                  trend={`${mockContracts.length} totales`}
+                  trend={`${contracts.length} totales`}
                   color="blue"
                 />
                 <StatCard
@@ -124,7 +133,7 @@ export function AdminDashboard() {
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {mockContracts.slice(0, 4).map((contract) => (
+                  {contracts.slice(0, 4).map((contract: any) => (
                     <ContractRow
                       key={contract.id}
                       contract={contract}
@@ -145,7 +154,7 @@ export function AdminDashboard() {
               <div className="w-96 overflow-auto">
                 <h3 className="text-white mb-4">Todos los Contratos</h3>
                 <ContractsList
-                  contracts={mockContracts}
+                  contracts={contracts}
                   selectedId={selectedContractId}
                   onSelect={setSelectedContractId}
                 />
@@ -153,8 +162,8 @@ export function AdminDashboard() {
 
               {/* Contract Detail */}
               <div className="flex-1 bg-[#0f0f17] rounded-lg border border-[#1a1a24] overflow-hidden">
-                {selectedContract ? (
-                  <ContractDetail contract={selectedContract} />
+                {selectedContractId ? (
+                  <ContractDetail contractId={selectedContractId} />
                 ) : (
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center">
@@ -171,7 +180,7 @@ export function AdminDashboard() {
             <div>
               <h3 className="text-white mb-4">Equipo de Trabajo</h3>
               <div className="grid grid-cols-3 gap-4">
-                {mockUsers.map((user) => (
+                {users.map((user: any) => (
                   <UserCard key={user.id} user={user} />
                 ))}
               </div>
@@ -199,11 +208,10 @@ function NavButton({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-        active
-          ? "bg-purple-500/20 text-white border border-purple-500/50"
-          : "text-gray-400 hover:text-white hover:bg-[#1a1a24]"
-      }`}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${active
+        ? "bg-purple-500/20 text-white border border-purple-500/50"
+        : "text-gray-400 hover:text-white hover:bg-[#1a1a24]"
+        }`}
     >
       <Icon className="w-5 h-5" />
       <span className="flex-1 text-left">{label}</span>
@@ -271,13 +279,12 @@ function ContractRow({
           <p className="text-xs text-gray-500">{contract.client}</p>
         </div>
         <div
-          className={`px-3 py-1 rounded-full text-xs ml-2 flex-shrink-0 ${
-            contract.status === "active"
-              ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-              : contract.status === "at-risk"
+          className={`px-3 py-1 rounded-full text-xs ml-2 flex-shrink-0 ${contract.status === "active"
+            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+            : contract.status === "at-risk"
               ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
               : "bg-green-500/20 text-green-400 border border-green-500/30"
-          }`}
+            }`}
         >
           {contract.status === "active" ? "Activo" : contract.status === "at-risk" ? "En Riesgo" : "Completado"}
         </div>
@@ -285,9 +292,8 @@ function ContractRow({
       <div className="flex items-center gap-3">
         <div className="flex-1 bg-[#1a1a24] rounded-full h-2">
           <div
-            className={`h-full rounded-full ${
-              contract.status === "active" ? "bg-blue-500" : contract.status === "at-risk" ? "bg-yellow-500" : "bg-green-500"
-            }`}
+            className={`h-full rounded-full ${contract.status === "active" ? "bg-blue-500" : contract.status === "at-risk" ? "bg-yellow-500" : "bg-green-500"
+              }`}
             style={{ width: `${contract.progress}%` }}
           />
         </div>
@@ -311,11 +317,10 @@ function UserCard({ user }: { user: any }) {
       </div>
       <p className="text-xs text-gray-500 mb-2">{user.email}</p>
       <div
-        className={`px-2 py-1 rounded-full text-xs inline-flex ${
-          user.status === "active"
-            ? "bg-green-500/10 text-green-400 border border-green-500/30"
-            : "bg-gray-500/10 text-gray-400 border border-gray-500/30"
-        }`}
+        className={`px-2 py-1 rounded-full text-xs inline-flex ${user.status === "active"
+          ? "bg-green-500/10 text-green-400 border border-green-500/30"
+          : "bg-gray-500/10 text-gray-400 border border-gray-500/30"
+          }`}
       >
         {user.status === "active" ? "Activo" : "Inactivo"}
       </div>

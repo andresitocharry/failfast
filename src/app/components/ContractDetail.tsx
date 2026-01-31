@@ -1,19 +1,35 @@
 import { useState } from "react";
-import { type Contract } from "@/app/data/mockData";
+import { useQuery } from "@apollo/client";
+import { GET_CONTRACT_DETAIL } from "@/app/data/queries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { 
-  MapPin, Calendar, DollarSign, TrendingUp, Users, FileText, 
-  CheckCircle2, Clock, AlertCircle, Bot, Download, Eye 
+import {
+  MapPin, Calendar, DollarSign, TrendingUp, Users, FileText,
+  CheckCircle2, Clock, AlertCircle, Bot, Download, Eye
 } from "lucide-react";
 import { cn } from "@/app/components/ui/utils";
 import { motion } from "motion/react";
 
 interface ContractDetailProps {
-  contract: Contract;
+  contractId: string;
 }
 
-export function ContractDetail({ contract }: ContractDetailProps) {
+export function ContractDetail({ contractId }: ContractDetailProps) {
+  const { data, loading, error } = useQuery(GET_CONTRACT_DETAIL, {
+    variables: { id: contractId },
+  });
   const [activeTab, setActiveTab] = useState("overview");
+
+  if (loading) return <div className="h-full flex items-center justify-center text-gray-500">Cargando detalles...</div>;
+  if (error) return <div className="h-full flex items-center justify-center text-red-500">Error al cargar contrato</div>;
+  if (!data || !data.contracts_by_pk) return <div className="h-full flex items-center justify-center text-gray-500">Contrato no encontrado</div>;
+
+  const contract = data.contracts_by_pk;
+
+  // Transform team members format if necessary or ensure query matches
+  const team = contract.contract_team_members.map((tm: any) => tm.user);
+
+  // Safe project manager name handling (assuming relation exists, otherwise fallback)
+  const pmName = contract.project_manager?.name || "No asignado";
 
   return (
     <div className="h-full flex flex-col">
@@ -29,7 +45,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
-                {contract.startDate} - {contract.endDate}
+                {contract.start_date} - {contract.end_date}
               </span>
               <span className="flex items-center gap-1.5 text-green-400">
                 <DollarSign className="w-4 h-4" />
@@ -41,8 +57,8 @@ export function ContractDetail({ contract }: ContractDetailProps) {
             <div className={cn(
               "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm border",
               contract.health >= 80 ? "bg-green-500/10 border-green-500/30 text-green-400" :
-              contract.health >= 60 ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400" :
-              "bg-red-500/10 border-red-500/30 text-red-400"
+                contract.health >= 60 ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400" :
+                  "bg-red-500/10 border-red-500/30 text-red-400"
             )}>
               <TrendingUp className="w-4 h-4" />
               Salud: {contract.health}%
@@ -69,9 +85,9 @@ export function ContractDetail({ contract }: ContractDetailProps) {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-4 gap-4">
-          <QuickStat label="Fase Actual" value={contract.phase.toUpperCase()} />
-          <QuickStat label="Riesgo" value={contract.riskLevel.toUpperCase()} />
-          <QuickStat label="Equipo" value={`${contract.team.length} miembros`} />
+          <QuickStat label="Fase Actual" value={(contract.phase || '').toUpperCase()} />
+          <QuickStat label="Riesgo" value={(contract.risk_level || '').toUpperCase()} />
+          <QuickStat label="Equipo" value={`${team.length} miembros`} />
           <QuickStat label="Hitos" value={`${contract.milestones.length} totales`} />
         </div>
       </div>
@@ -95,7 +111,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
 
         <div className="flex-1 overflow-auto p-6">
           <TabsContent value="overview" className="mt-0">
-            <OverviewTab contract={contract} />
+            <OverviewTab contract={{ ...contract, projectManager: pmName }} />
           </TabsContent>
 
           <TabsContent value="milestones" className="mt-0">
@@ -103,7 +119,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
           </TabsContent>
 
           <TabsContent value="team" className="mt-0">
-            <TeamTab team={contract.team} projectManager={contract.projectManager} />
+            <TeamTab team={team} projectManager={pmName} />
           </TabsContent>
 
           <TabsContent value="documents" className="mt-0">
@@ -124,7 +140,7 @@ function QuickStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function OverviewTab({ contract }: { contract: Contract }) {
+function OverviewTab({ contract }: { contract: any }) {
   return (
     <div className="space-y-6">
       {/* Client Info */}
@@ -200,7 +216,7 @@ function OverviewTab({ contract }: { contract: Contract }) {
   );
 }
 
-function MilestonesTab({ milestones }: { milestones: Contract["milestones"] }) {
+function MilestonesTab({ milestones }: { milestones: any }) {
   const statusConfig = {
     completed: { icon: CheckCircle2, label: "Completado", color: "text-green-400 bg-green-500/10 border-green-500/30" },
     "in-progress": { icon: Clock, label: "En Progreso", color: "text-blue-400 bg-blue-500/10 border-blue-500/30" },
@@ -210,8 +226,8 @@ function MilestonesTab({ milestones }: { milestones: Contract["milestones"] }) {
 
   return (
     <div className="space-y-4">
-      {milestones.map((milestone, index) => {
-        const config = statusConfig[milestone.status];
+      {milestones.map((milestone: any, index: number) => {
+        const config = statusConfig[milestone.status as keyof typeof statusConfig];
         const Icon = config.icon;
 
         return (
@@ -243,7 +259,7 @@ function MilestonesTab({ milestones }: { milestones: Contract["milestones"] }) {
             <div>
               <p className="text-xs text-gray-500 mb-2">Entregables:</p>
               <div className="space-y-1">
-                {milestone.deliverables.map((deliverable, idx) => (
+                {milestone.deliverables.map((deliverable: any, idx: number) => (
                   <div key={idx} className="flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-purple-500"></div>
                     <span className="text-xs text-gray-400">{deliverable}</span>
@@ -258,10 +274,10 @@ function MilestonesTab({ milestones }: { milestones: Contract["milestones"] }) {
   );
 }
 
-function TeamTab({ team, projectManager }: { team: Contract["team"]; projectManager: string }) {
+function TeamTab({ team, projectManager }: { team: any; projectManager: string }) {
   return (
     <div className="space-y-3">
-      {team.map((member, index) => (
+      {team.map((member: any, index: number) => (
         <motion.div
           key={member.id}
           initial={{ opacity: 0, x: -20 }}
@@ -270,7 +286,7 @@ function TeamTab({ team, projectManager }: { team: Contract["team"]; projectMana
           className="bg-[#0f0f17] rounded-lg p-4 border border-[#1a1a24] flex items-center gap-4 hover:border-purple-500/30 transition-all"
         >
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-medium">
-            {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+            {member.name.split(' ').map((n: any) => n[0]).join('').slice(0, 2)}
           </div>
           <div className="flex-1">
             <h4 className="text-white mb-1">{member.name}</h4>
@@ -279,7 +295,7 @@ function TeamTab({ team, projectManager }: { team: Contract["team"]; projectMana
           </div>
           <div className={cn(
             "px-3 py-1 rounded-full text-xs",
-            member.status === "active" 
+            member.status === "active"
               ? "bg-green-500/10 text-green-400 border border-green-500/30"
               : "bg-gray-500/10 text-gray-400 border border-gray-500/30"
           )}>
@@ -291,7 +307,7 @@ function TeamTab({ team, projectManager }: { team: Contract["team"]; projectMana
   );
 }
 
-function DocumentsTab({ documents }: { documents: Contract["documents"] }) {
+function DocumentsTab({ documents }: { documents: any }) {
   const typeColors = {
     contrato: "text-blue-400 bg-blue-500/10",
     tecnico: "text-purple-400 bg-purple-500/10",
@@ -307,8 +323,8 @@ function DocumentsTab({ documents }: { documents: Contract["documents"] }) {
 
   return (
     <div className="space-y-3">
-      {documents.map((doc, index) => {
-        const status = statusConfig[doc.status];
+      {documents.map((doc: any, index: number) => {
+        const status = statusConfig[doc.status as keyof typeof statusConfig];
         return (
           <motion.div
             key={doc.id}
@@ -318,7 +334,7 @@ function DocumentsTab({ documents }: { documents: Contract["documents"] }) {
             className="bg-[#0f0f17] rounded-lg p-4 border border-[#1a1a24] hover:border-purple-500/30 transition-all group"
           >
             <div className="flex items-start gap-4">
-              <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", typeColors[doc.type])}>
+              <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", typeColors[doc.type as keyof typeof typeColors])}>
                 <FileText className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">

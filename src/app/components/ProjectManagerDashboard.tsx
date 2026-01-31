@@ -1,48 +1,75 @@
 import { AlertCircle, Clock, TrendingUp, Activity, Bot } from "lucide-react";
 import { PhaseColumn, type ActionCardProps } from "@/app/components/Timeline";
 import { AICopilot } from "@/app/components/AICopilot";
-import { mockContracts } from "@/app/data/mockData";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@apollo/client";
+import { GET_CONTRACTS, GET_CONTRACT_DETAIL } from "@/app/data/queries";
 
 export function ProjectManagerDashboard() {
-  const [selectedContractId, setSelectedContractId] = useState(mockContracts[0].id);
-  const contract = mockContracts.find(c => c.id === selectedContractId) || mockContracts[0];
+  const { data: listData, loading: listLoading } = useQuery(GET_CONTRACTS);
+  const contracts = listData?.contracts || [];
+
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (contracts.length > 0 && !selectedContractId) {
+      setSelectedContractId(contracts[0].id);
+    }
+  }, [contracts, selectedContractId]);
+
+  const { data: detailData, loading: detailLoading } = useQuery(GET_CONTRACT_DETAIL, {
+    variables: { id: selectedContractId },
+    skip: !selectedContractId,
+  });
+
+  const contract = detailData?.contracts_by_pk;
+
+  if (listLoading || (selectedContractId && detailLoading)) {
+    return <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center text-white">Cargando proyecto...</div>;
+  }
+
+  if (!contract) {
+    return <div className="flex-1 bg-[#0a0a0f] flex items-center justify-center text-white">No hay contratos disponibles</div>;
+  }
 
   // Convert milestones to action cards
-  const inicioActions: ActionCardProps[] = contract.milestones
-    .filter(m => m.phase === "inicio")
-    .map(m => ({
+  const inicioActions: ActionCardProps[] = (contract.milestones || [])
+    .filter((m: any) => m.phase === "inicio")
+    .map((m: any) => ({
       title: m.name,
-      status: m.status === "completed" ? "on-track" as const : 
-              m.status === "delayed" ? "delayed" as const : "at-risk" as const,
+      status: m.status === "completed" ? "on-track" as const :
+        m.status === "delayed" ? "delayed" as const : "at-risk" as const,
       phase: "inicio" as const,
-      dueDate: m.dueDate,
+      dueDate: m.due_date, // Note: due_date from DB
       owner: `Agente ${m.phase}`,
       daysDelay: m.status === "delayed" ? 2 : undefined,
     }));
 
-  const ejecucionActions: ActionCardProps[] = contract.milestones
-    .filter(m => m.phase === "ejecucion")
-    .map(m => ({
+  const ejecucionActions: ActionCardProps[] = (contract.milestones || [])
+    .filter((m: any) => m.phase === "ejecucion")
+    .map((m: any) => ({
       title: m.name,
-      status: m.status === "completed" ? "on-track" as const : 
-              m.status === "delayed" ? "delayed" as const : 
-              m.status === "in-progress" ? "on-track" as const : "at-risk" as const,
+      status: m.status === "completed" ? "on-track" as const :
+        m.status === "delayed" ? "delayed" as const :
+          m.status === "in-progress" ? "on-track" as const : "at-risk" as const,
       phase: "ejecucion" as const,
-      dueDate: m.dueDate,
+      dueDate: m.due_date,
       owner: `Agente ${m.phase}`,
       daysDelay: m.status === "delayed" ? 4 : undefined,
     }));
 
-  const cierreActions: ActionCardProps[] = contract.milestones
-    .filter(m => m.phase === "cierre")
-    .map(m => ({
+  const cierreActions: ActionCardProps[] = (contract.milestones || [])
+    .filter((m: any) => m.phase === "cierre")
+    .map((m: any) => ({
       title: m.name,
       status: m.status === "completed" ? "on-track" as const : "at-risk" as const,
       phase: "cierre" as const,
-      dueDate: m.dueDate,
+      dueDate: m.due_date,
       owner: `Agente ${m.phase}`,
     }));
+
+  // Handle risk_level from DB
+  const riskLevel = contract.risk_level || 'bajo';
 
   return (
     <div className="flex-1 flex overflow-hidden">
@@ -51,15 +78,14 @@ export function ProjectManagerDashboard() {
         {/* Contract Selector */}
         <div className="border-b border-[#1a1a24] bg-[#0f0f17] px-8 py-4">
           <div className="flex items-center gap-2 overflow-x-auto">
-            {mockContracts.map((c) => (
+            {contracts.map((c: any) => (
               <button
                 key={c.id}
                 onClick={() => setSelectedContractId(c.id)}
-                className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-all flex-shrink-0 ${
-                  selectedContractId === c.id
+                className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-all flex-shrink-0 ${selectedContractId === c.id
                     ? "bg-purple-500/20 text-white border border-purple-500/50"
                     : "bg-[#1a1a24] text-gray-400 hover:text-white hover:bg-[#2a2a34]"
-                }`}
+                  }`}
               >
                 {c.title}
               </button>
@@ -98,8 +124,8 @@ export function ProjectManagerDashboard() {
                 <Indicator
                   icon={AlertCircle}
                   label="Riesgo de Retraso"
-                  value={contract.riskLevel === 'bajo' ? 'Bajo' : contract.riskLevel === 'medio' ? 'Medio' : 'Alto'}
-                  color={contract.riskLevel === 'bajo' ? 'blue' : contract.riskLevel === 'medio' ? 'yellow' : 'red'}
+                  value={riskLevel === 'bajo' ? 'Bajo' : riskLevel === 'medio' ? 'Medio' : 'Alto'}
+                  color={riskLevel === 'bajo' ? 'blue' : riskLevel === 'medio' ? 'yellow' : 'red'}
                 />
                 <Indicator
                   icon={Bot}
